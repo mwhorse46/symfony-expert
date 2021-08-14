@@ -1,0 +1,49 @@
+version: "3"
+services:
+  app:
+    image: codebjorn/php:latest
+    user: 1000:1000
+    container_name: posty-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - posty
+
+  db:
+    image: postgres:latest
+    container_name: posty-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "posty"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - posty
+    volumes:
+      - postgres:/data/postgres
+
+  nginx:
+    image: nginx:alpine
+    container_name: posty-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d
+    networks:
+      - posty
+
+networks:
+  posty:
+    driver: bridge
+
+
+volumes:
+  postgres:
